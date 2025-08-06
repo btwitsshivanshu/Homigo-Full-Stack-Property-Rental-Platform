@@ -1,0 +1,28 @@
+
+<style>
+  .flash-fixed {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1055;
+    min-width: 320px;
+    max-width: 500px;
+    width: 50vw;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+</style>
+
+<%if(success && success.length) { %>
+    <div class="alert alert-success alert-dismissible fade show flash-fixed" role="alert">
+        <%= success %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>
+
+<%if(error && error.length) { %>
+    <div class="alert alert-danger alert-dismissible fade show flash-fixed" role="alert">
+        <%= error %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<% } %>

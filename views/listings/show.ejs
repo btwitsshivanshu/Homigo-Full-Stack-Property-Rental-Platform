@@ -1,0 +1,175 @@
+<% layout("/layouts/boilerplate") %>
+<style>
+  .listing-main-card {
+    border-radius: 1.25rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    border: none;
+    margin-bottom: 2.5rem;
+  }
+  .listing-main-card .card-img-top {
+    border-top-left-radius: 1.25rem;
+    border-top-right-radius: 1.25rem;
+    object-fit: cover;
+    height: 22rem;
+  }
+  .listing-details-list {
+    font-size: 1.1rem;
+    color: #212529;
+    margin-bottom: 0;
+    padding-left: 0.5rem;
+  }
+  .listing-details-list li {
+    margin-bottom: 0.5rem;
+  }
+  .review-badge {
+    background: #0d6efd;
+    color: #fff;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    margin-right: 0.5rem;
+  }
+  .review-card {
+    border-radius: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: none;
+    margin-bottom: 2rem;
+  }
+  .review-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0d6efd;
+  }
+  .review-card .card-text {
+    font-size: 1rem;
+  }
+  .review-delete-btn {
+    font-size: 0.95rem;
+    padding: 0.3rem 1rem;
+  }
+</style>
+
+<div class="container py-4 px-2 px-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <h2 class="mb-4 mt-3 fw-bold text-primary text-center"><%= listing.title %></h2>
+      <div class="card listing-main-card">
+        <img src="<%= listing.image.url %>" class="card-img-top show-img" alt="listing_image">
+        <div class="card-body">
+          <div class="px-2 py-1">
+            <div class="mb-3">
+              <span class="fs-5 text-dark"><b>Owned By :</b> </i><%= listing.owner.username %></span>
+            </div>
+            <div class="mb-3">
+              <span class="fs-5 text-dark"><i class="fa fa-align-left me-2 text-primary"></i><%= listing.description %></span>
+            </div>
+            <div class="mb-3">
+              <span class="fs-5 fw-bold text-success"><i class="fa fa-rupee-sign me-2"></i>&#8377; <%= listing.price.toLocaleString("en-IN") %></span>
+            </div>
+            <div class="mb-3">
+              <span class="fs-5 text-secondary"><i class="fa fa-map-marker-alt me-2 text-danger"></i><%= listing.location %></span>
+            </div>
+            <div class="mb-1">
+              <span class="fs-5 text-info"><i class="fa fa-globe-asia me-2"></i><%= listing.country %></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <%if(user && user._id.equals(listing.owner._id)){%>
+      <div class="row mb-4 justify-content-between">
+        <div class="col-md-4 text-start">
+          <a href="/listings/<%= listing._id %>/edit" class="btn btn-primary add-btn">Edit this Listing</a>
+        </div>
+        <div class="col-md-4 text-end">
+          <form method="POST" action="/listings/<%= listing._id %>?_method=DELETE">
+            <button class="btn btn-primary font-bold">Delete this Listing</button>
+          </form>
+        </div>
+      </div>
+      <% } %>
+      <hr class="my-4">
+      <% if(user && !user._id.equals(listing.owner._id)){ %>
+      <div class="mb-5">
+        <h4 class="mb-3 text-primary"><b>Leave A Review</b></h4>
+        <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate class="needs-validation">
+          <div class="mb-3">
+            <label for="rating" class="form-label"><b>Rating</b></label>
+            <select class="form-select" id="rating" name="review[rating]" required>
+              <option value="" disabled selected>Select rating</option>
+              <option value="1">1 - Poor</option>
+              <option value="2">2 - Fair</option>
+              <option value="3">3 - Good</option>
+              <option value="4">4 - Very Good</option>
+              <option value="5">5 - Excellent</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="comment" class="form-label"><b>Comments</b></label>
+            <textarea class="form-control" id="comment" rows="6" name="review[comment]" placeholder="Write Something !!" required></textarea>
+            <div class="invalid-feedback">Please add a Comment For Review</div>
+          </div>
+          <button type="submit" class="btn btn-primary add-btn mt-3 mb-3 w-100">Submit Review</button>
+        </form>
+      </div>
+      <hr>
+      <%} %>
+      
+
+      <h4 class="mb-5 text-primary text-center"><b>Reviews</b></h4>
+      <% if (listing.reviews.length === 0) { %>
+        <p class="text-muted text-center">No reviews yet. Be the first to review!</p>
+      <% } else { %>
+        <div class="row justify-content-center">
+          <% for (let review of listing.reviews) { %>
+            <div class="col-md-6 col-lg-5 mb-4 d-flex align-items-stretch">
+              <div class="card review-card w-100 shadow-sm border-0">
+                <div class="card-body d-flex flex-column justify-content-between">
+                  <div class="d-flex align-items-center mb-3">
+                    <img src="https://ui-avatars.com/api/?name=<%= review.author.username || 'User' %>&background=0d6efd&color=fff&size=48" class="rounded-circle me-3 border border-2" alt="avatar" style="width:48px;height:48px;object-fit:cover;">
+                    <div>
+                      <span class="fw-bold text-primary"><%= review.author.username || 'Anonymous' %></span><br>
+                      <span class="review-badge rounded-pill px-3 py-1"> <i class="fa fa-star text-warning"></i> <%= review.rating %> / 5 </span>
+                    </div>
+                  </div>
+                  <div class="mb-2">
+                    <p class="card-text text-dark fs-6 mb-1"><i class="fa fa-quote-left text-primary me-2"></i><%= review.comment %></p>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <small class="text-muted"> <i class="fa fa-calendar-alt me-1"></i> <%= review.createdAt.toLocaleDateString() %> </small>
+                    <form action="/listings/<%=listing._id%>/reviews/<%=review._id%>?_method=DELETE" method="post" class="mb-0">
+                    <% if (user && review.author && user._id.equals(review.author._id)) { %>
+                      <form action="/listings/<%=listing._id%>/reviews/<%=review._id%>?_method=DELETE" method="post" class="mb-0">
+                        <button class="btn btn-outline-danger review-delete-btn"><i class="fa fa-trash"></i> Delete</button>
+                      </form>
+                    <% } %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% } %>
+        </div>
+      <% } %>
+    </div>
+    <div class="row justify-content-center mt-4">
+      <div class="col-lg-8 col-md-10">
+        <h3 class="mb-3 text-primary text-center"><b>Where you'll be</b></h3>
+        <div id="map" style="height: 350px; width: 100%; border-radius: 1rem; box-shadow: 0 2px 12px rgba(0,0,0,0.08);"></div>
+      </div>
+    </div>
+    <script>
+    // Parse coordinates as floats for Leaflet
+    var lat = parseFloat('<%= coords.lat %>');
+    var lon = parseFloat('<%= coords.lon %>');
+    var map = L.map('map').setView([lat, lon], 13);
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add a marker
+    var marker = L.marker([lat, lon]).addTo(map);
+    marker.bindPopup(`<b><%= listing.location %></b><br><%= listing.country %>`).openPopup();
+  </script>
+  </div>
+</div>
