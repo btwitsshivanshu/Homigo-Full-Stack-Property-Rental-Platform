@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "builds": [
+    // 1. FRONT-END BUILD (React)
+    {
+      "src": "client/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "build"
+      }
+    },
+    // 2. BACK-END BUILD (Node/Express Serverless Function)
+    {
+      "src": "server/index.js", // <-- ADJUST this if your entry file is not index.js
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    // 1. API ROUTING: Route all requests starting with /api/ to the Node/Express backend
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js" // <-- ADJUST this if your entry file is not index.js
+    },
+    // 2. STATIC/FRONT-END ROUTING: Route all other requests to the React SPA build
+    {
+      "src": "/(.*)",
+      "dest": "client/$1"
+    }
+  ]
+}
