@@ -1,0 +1,89 @@
+.listings-page {
+    padding: 2rem 0;
+}
+
+/* Search Section Styling */
+.search-section {
+    padding: 1rem 0;
+}
+
+.search-bar-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 600px;
+    width: 100%;
+}
+
+.search-bar-wrapper input {
+    border-radius: 50px;
+    padding: 0.75rem 1.5rem;
+    border: 2px solid #e0e0e0;
+    transition: all 0.3s ease;
+}
+
+.search-bar-wrapper input:focus {
+    border-color: #fe424d;
+    box-shadow: 0 0 0 0.2rem rgba(254, 66, 77, 0.15);
+}
+
+.search-bar-wrapper button {
+    border-radius: 50px;
+    padding: 0.75rem 2rem;
+    white-space: nowrap;
+    background-color: #fe424d;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.search-bar-wrapper button:hover {
+    background-color: #e63946;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(254, 66, 77, 0.3);
+}
+
+/* Hero Section Styling */
+.listings-page h2 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -0.5px;
+}
+
+.listings-page .text-muted {
+    font-size: 1.1rem;
+    font-weight: 300;
+}
+
+.listing-card {
+    border-radius: 15px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.listing-card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
+.listing-card .card-img-overlay {
+    border-radius: 15px;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 1rem;
+}
+
+.listing-card .card-title {
+    color: white;
+    font-weight: 600;
+}
+
+.listing-card .card-text {
+    color: rgba(255,255,255,0.9);
+}
