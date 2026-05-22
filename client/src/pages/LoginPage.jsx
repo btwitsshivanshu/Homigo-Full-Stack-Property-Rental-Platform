@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import Layout from '../layouts/Layout';
 import './Form.css';
 import { saveToken } from '../utils/auth';
+import { getApiUrl } from '../utils/api';
 
 const LoginPage = ({ onLogin }) => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const LoginPage = ({ onLogin }) => {
     
     try {
       if (!otpPhase) {
-        const response = await fetch('/user/login', {
+        const response = await fetch(getApiUrl('/user/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
@@ -46,7 +47,7 @@ const LoginPage = ({ onLogin }) => {
           alert(data.message || 'Login failed');
         }
       } else {
-        const response = await fetch('/user/verify-otp', {
+        const response = await fetch(getApiUrl('/user/verify-otp'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ usernameOrEmail: formData.usernameOrEmail, otp }),
@@ -92,7 +93,7 @@ const LoginPage = ({ onLogin }) => {
                   onClick={async()=>{
                     setIsResending(true);
                     try {
-                      const resp = await fetch('/user/resend-otp', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ usernameOrEmail: formData.usernameOrEmail })});
+                      const resp = await fetch(getApiUrl('/user/resend-otp'), { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ usernameOrEmail: formData.usernameOrEmail })});
                       const d = await resp.json();
                       if (!resp.ok) alert(d.message || 'Failed to resend');
                       else setCooldown(60);

@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../layouts/Layout';
 import Loader from '../components/Loader';
 import './Form.css';
-import { apiFetch } from '../utils/api';
+import { apiFetch, getApiUrl } from '../utils/api';
 
 const EditListingPage = ({ user, onLogout }) => {
   const { id } = useParams();
@@ -14,7 +14,7 @@ const EditListingPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     const fetchListing = async () => {
-      const response = await fetch(`/listings/${id}`);
+      const response = await fetch(getApiUrl(`/listings/${id}`));
       const data = await response.json();
       if (response.ok) {
         setFormData(data.listing);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Layout from '../layouts/Layout';
+import { getApiUrl } from '../utils/api';
 import './ListingsPage.css';
 
 const ListingsPage = ({ user, onLogout }) => {
@@ -11,7 +12,7 @@ const ListingsPage = ({ user, onLogout }) => {
   useEffect(() => {
     const fetchListings = async () => {
       const query = new URLSearchParams(location.search).get('location');
-      const response = await fetch(`/listings${query ? `?location=${query}` : ''}`);
+      const response = await fetch(getApiUrl(`/listings${query ? `?location=${query}` : ''}`));
       const data = await response.json();
       if (response.ok) {
         setListings(data.allListings);

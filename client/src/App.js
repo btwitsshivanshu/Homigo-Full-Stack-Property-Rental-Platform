@@ -12,7 +12,7 @@ import OwnerListingsPage from './pages/OwnerListingsPage';
 import OwnerVerifyPage from './pages/OwnerVerifyPage';
 import AdminKycReviewPage from './pages/AdminKycReviewPage';
 import './App.css';
-import { apiFetch } from './utils/api';
+import { apiFetch, getApiUrl } from './utils/api';
 import { clearToken } from './utils/auth';
 
 function App() {
@@ -41,7 +41,7 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch('/user/logout', { method: 'POST' });
+      const response = await fetch(getApiUrl('/user/logout'), { method: 'POST' });
       if (response.ok) {
         setUser(null);
         clearToken();

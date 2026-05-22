@@ -9,7 +9,7 @@ import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 import './ListingShowPage.css';
 import Loader from '../components/Loader';
-import { apiFetch } from '../utils/api';
+import { apiFetch, getApiUrl } from '../utils/api';
 
 const Toast = ({ type = 'success', message, onClose }) => (
   <div className={`toast-container position-fixed top-0 start-50 translate-middle-x p-3`} style={{ zIndex: 1080 }}>
@@ -54,7 +54,7 @@ const ListingShowPage = ({ user, onLogout }) => {
 
   useEffect(() => {
     const fetchListing = async () => {
-      const response = await fetch(`/listings/${id}`);
+      const response = await fetch(getApiUrl(`/listings/${id}`));
       const data = await response.json();
       if (response.ok) {
         setListing(data.listing);

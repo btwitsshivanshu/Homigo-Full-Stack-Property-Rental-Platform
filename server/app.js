@@ -43,10 +43,12 @@ app.use(express.json()); // For parsing application/json
 app.use(express.urlencoded({extended:true}));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Enable CORS for React dev server
-if (process.env.NODE_ENV !== 'production') {
-    app.use(cors({ origin: 'http://localhost:3000' }));
-}
+// Enable CORS for all origins
+app.use(cors({
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 app.get("/",(req,res)=>{
