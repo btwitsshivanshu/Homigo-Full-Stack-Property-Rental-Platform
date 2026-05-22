@@ -24,8 +24,8 @@ module.exports.signup = async (req, res) => {
         user.otpCodeHash = await hashOtp(otp);
         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
         await user.save();
-        // Send OTP (or log in dev)
-        await sendOtpEmail(email, otp);
+        // Send OTP (fire-and-forget - don't await)
+        sendOtpEmail(email, otp);
         return res.status(201).json({ step: 'verify-otp', user: user.toJSON(), message: 'OTP sent to email' });
     } catch (e) {
         return res.status(500).json({ message: e.message || 'Internal server error' });
@@ -54,7 +54,8 @@ module.exports.login = async (req, res) => {
         user.otpCodeHash = await hashOtp(otp);
         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
-        await sendOtpEmail(user.email, otp);
+        // Send OTP (fire-and-forget - don't await)
+        sendOtpEmail(user.email, otp);
         return res.status(200).json({ step: 'verify-otp', user: user.toJSON(), message: 'OTP sent to email' });
     } catch (e) {
         console.error('Login error:', e);
@@ -122,7 +123,8 @@ module.exports.resendOtp = async (req, res) => {
         user.otpCodeHash = await hashOtp(otp);
         user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
-        await sendOtpEmail(user.email, otp);
+        // Send OTP (fire-and-forget - don't await)
+        sendOtpEmail(user.email, otp);
         return res.json({ message: 'OTP resent' });
     } catch (e) {
         return res.status(500).json({ message: e.message || 'Internal server error' });

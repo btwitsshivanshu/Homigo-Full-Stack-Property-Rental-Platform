@@ -30,18 +30,22 @@ module.exports.show = async (req, res) => {
         return res.status(404).json({ message: "Listing not found!" });
     }
 
-    // Forward geocoding using Nominatim
+    // Forward geocoding using Nominatim (with timeout and error handling)
     const axios = require('axios');
     let coords = { lat: 28.6139, lon: 77.2090 }; // Default: New Delhi
     try {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(listing.location)}`;
-        const response = await axios.get(url, { headers: { 'User-Agent': 'HomigoApp/1.0' } });
+        const response = await axios.get(url, { 
+            headers: { 'User-Agent': 'HomigoApp/1.0' },
+            timeout: 5000 // 5 second timeout
+        });
         if (response.data && response.data.length > 0) {
             coords.lat = response.data[0].lat;
             coords.lon = response.data[0].lon;
         }
     } catch (err) {
-        console.log('Nominatim geocoding error:', err.message);
+        console.log('Nominatim geocoding error:', err.response?.status || err.message);
+        // Use default coords if geocoding fails (don't block the response)
     }
 
     res.json({ listing, coords });
