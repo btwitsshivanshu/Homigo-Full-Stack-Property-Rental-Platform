@@ -1,119 +1,50 @@
-const nodemailer = require('nodemailer');
+const sgMail = require('@sendgrid/mail');
 
-let transporter = null;
-
-function createTransport() {
-  // Use env config in production; in dev, log to console if not set
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_SECURE } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
-    console.warn('[MAILER] SMTP not configured. Using console logging.');
-    return null;
-  }
-  
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT),
-    secure: SMTP_SECURE === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
-    connectionTimeout: 30000, // 30 second timeout for cloud environments
-    socketTimeout: 30000,
-    greetingTimeout: 10000,
-    responseTimeout: 30000,
-    tls: {
-      rejectUnauthorized: false // Allow self-signed certs
-    },
-    pool: {
-      maxConnections: 1,
-      maxMessages: 100,
-      rateDelta: 1000,
-      rateLimit: 5
-    }
-  });
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  console.log('✅ SendGrid initialized');
 }
 
 async function sendOtpEmail(to, otp) {
-  const subject = 'Your Homigo verification code';
-  const text = `Your verification code is ${otp}. It expires in 10 minutes.`;
-  
-  if (!transporter) {
-    transporter = createTransport();
-  }
-
-  if (!transporter) {
+  if (!process.env.SENDGRID_API_KEY) {
     console.log(`[MAILER-DEV] OTP for ${to}: ${otp}`);
     return;
   }
 
-  // Send email asynchronously (fire-and-forget) with timeout
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Email send timeout')), 35000)
-  );
-
-  Promise.race([
-    new Promise((resolve, reject) => {
-      transporter.sendMail(
-        { 
-          from: process.env.SMTP_FROM || process.env.SMTP_USER, 
-          to, 
-          subject, 
-          text 
-        },
-        (error, info) => {
-          if (error) {
-            console.error('[MAILER] Email failed:', error.message);
-            reject(error);
-          } else {
-            console.log('[MAILER] Email sent successfully');
-            resolve(info);
-          }
-        }
-      );
-    }),
-    timeoutPromise
-  ]).catch(err => {
-    console.error('[MAILER] Async error:', err.message);
-  });
+  try {
+    await sgMail.send({
+      to,
+      from: process.env.SENDGRID_FROM_EMAIL,
+      subject: 'Your Homigo verification code',
+      html: `
+        <h2>Verify Your Email</h2>
+        <p>Your verification code is: <strong>${otp}</strong></p>
+        <p>This code expires in 10 minutes.</p>
+      `
+    });
+    console.log('[MAILER] OTP sent to', to);
+  } catch (error) {
+    console.error('[MAILER] Error:', error.message);
+  }
 }
 
-function sendMail(to, subject, html) {
-  if (!transporter) {
-    transporter = createTransport();
-  }
-
-  if (!transporter) {
+async function sendMail(to, subject, html) {
+  if (!process.env.SENDGRID_API_KEY) {
     console.log(`[MAILER-DEV] Email to ${to}: ${subject}`);
     return;
   }
 
-  // Send email asynchronously (fire-and-forget) with timeout
-  const timeoutPromise = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error('Email send timeout')), 35000)
-  );
-
-  Promise.race([
-    new Promise((resolve, reject) => {
-      transporter.sendMail(
-        {
-          from: process.env.SMTP_FROM || process.env.SMTP_USER,
-          to,
-          subject,
-          html
-        },
-        (error, info) => {
-          if (error) {
-            console.error('[MAILER] Email failed:', error.message);
-            reject(error);
-          } else {
-            console.log('[MAILER] Email sent successfully');
-            resolve(info);
-          }
-        }
-      );
-    }),
-    timeoutPromise
-  ]).catch(err => {
-    console.error('[MAILER] Async error:', err.message);
-  });
+  try {
+    await sgMail.send({
+      to,
+      from: process.env.SENDGRID_FROM_EMAIL,
+      subject,
+      html
+    });
+    console.log('[MAILER] Email sent to', to);
+  } catch (error) {
+    console.error('[MAILER] Error:', error.message);
+  }
 }
 
 module.exports = { sendOtpEmail, sendMail };
