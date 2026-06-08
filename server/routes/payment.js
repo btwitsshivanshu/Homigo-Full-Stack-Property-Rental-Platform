@@ -4,7 +4,7 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Booking = require('../models/booking');
 const { verifyJWT, requireRole } = require('../middleware/auth');
-const { sendMail } = require('../utils/mailer');
+const { sendMail, sendOtpEmail } = require('../utils/mailer');
 
 // Validate Razorpay configuration
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
@@ -148,7 +148,7 @@ router.post('/verify', verifyJWT, requireRole('customer'), async (req, res) => {
     booking.status = 'paid';
     await booking.save();
 
-    // Send confirmation emails
+    // Send confirmation emails (fire-and-forget, don't block response)
     try {
       // Email to customer
       const customerEmailHtml = `
@@ -169,7 +169,7 @@ router.post('/verify', verifyJWT, requireRole('customer'), async (req, res) => {
         <p>If you have any questions, feel free to contact the property owner.</p>
       `;
 
-      await sendMail(
+      sendMail(
         booking.customer.email,
         'Booking Confirmation - Payment Successful',
         customerEmailHtml
@@ -193,14 +193,13 @@ router.post('/verify', verifyJWT, requireRole('customer'), async (req, res) => {
         <p>Thank you for listing with Homigo!</p>
       `;
 
-      await sendMail(
+      sendMail(
         booking.owner.email,
         'New Booking - Payment Confirmed',
         ownerEmailHtml
       );
     } catch (emailError) {
-      console.error('Error sending confirmation emails:', emailError);
-      // Don't fail the request if email sending fails
+      console.error('Error queuing confirmation emails:', emailError);
     }
 
     res.json({

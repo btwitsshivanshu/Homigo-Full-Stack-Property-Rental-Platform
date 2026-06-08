@@ -15,10 +15,18 @@ function createTransport() {
     port: Number(SMTP_PORT),
     secure: SMTP_SECURE === 'true',
     auth: { user: SMTP_USER, pass: SMTP_PASS },
-    connectionTimeout: 10000, // 10 second timeout
-    socketTimeout: 10000,
+    connectionTimeout: 30000, // 30 second timeout for cloud environments
+    socketTimeout: 30000,
+    greetingTimeout: 10000,
+    responseTimeout: 30000,
     tls: {
       rejectUnauthorized: false // Allow self-signed certs
+    },
+    pool: {
+      maxConnections: 1,
+      maxMessages: 100,
+      rateDelta: 1000,
+      rateLimit: 5
     }
   });
 }
@@ -37,8 +45,8 @@ async function sendOtpEmail(to, otp) {
   }
 
   // Send email asynchronously (fire-and-forget) with timeout
-  const timeoutPromise = new Promise((_, reject) => 
-    setTimeout(() => reject(new Error('Email send timeout')), 8000)
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Email send timeout')), 35000)
   );
 
   Promise.race([
@@ -67,4 +75,45 @@ async function sendOtpEmail(to, otp) {
   });
 }
 
-module.exports = { sendOtpEmail };
+function sendMail(to, subject, html) {
+  if (!transporter) {
+    transporter = createTransport();
+  }
+
+  if (!transporter) {
+    console.log(`[MAILER-DEV] Email to ${to}: ${subject}`);
+    return;
+  }
+
+  // Send email asynchronously (fire-and-forget) with timeout
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Email send timeout')), 35000)
+  );
+
+  Promise.race([
+    new Promise((resolve, reject) => {
+      transporter.sendMail(
+        {
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to,
+          subject,
+          html
+        },
+        (error, info) => {
+          if (error) {
+            console.error('[MAILER] Email failed:', error.message);
+            reject(error);
+          } else {
+            console.log('[MAILER] Email sent successfully');
+            resolve(info);
+          }
+        }
+      );
+    }),
+    timeoutPromise
+  ]).catch(err => {
+    console.error('[MAILER] Async error:', err.message);
+  });
+}
+
+module.exports = { sendOtpEmail, sendMail };

@@ -6,6 +6,7 @@ const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 const { verifyJWT, requireRole } = require('../middleware/auth');
 const wrapAsync = require('../utils/wrapAsync');
 const User = require('../models/user');
+const { sendMail } = require('../utils/mailer');
 
 // Owner: Upload Aadhaar image(s) and submit for verification
 router.post('/owner/upload', verifyJWT, requireRole('owner'), upload.array('aadhaar', 2), wrapAsync(async (req, res) => {
@@ -39,6 +40,18 @@ router.post('/admin/:userId/approve', verifyJWT, requireRole('admin'), wrapAsync
   user.kycVerifiedBy = req.user.id;
   user.kycNotes = undefined;
   await user.save();
+
+  // Send approval email (fire-and-forget)
+  const approvalEmail = `
+    <h2>KYC Verification Approved ✅</h2>
+    <p>Dear ${user.username},</p>
+    <p>Congratulations! Your KYC verification has been successfully approved.</p>
+    <p>You can now list properties on Homigo and start earning.</p>
+    <p>Thank you for joining us!</p>
+    <p><strong>Homigo Team</strong></p>
+  `;
+  sendMail(user.email, 'KYC Verification Approved', approvalEmail);
+
   res.json({ message: 'KYC verified', kycStatus: user.kycStatus });
 }));
 
@@ -51,6 +64,20 @@ router.post('/admin/:userId/reject', verifyJWT, requireRole('admin'), wrapAsync(
   user.kycStatus = 'rejected';
   user.kycNotes = reason || 'Rejected';
   await user.save();
+
+  // Send rejection email (fire-and-forget)
+  const rejectionEmail = `
+    <h2>KYC Verification Not Approved ⚠️</h2>
+    <p>Dear ${user.username},</p>
+    <p>Your KYC verification has been reviewed and unfortunately could not be approved at this time.</p>
+    <h3>Reason for rejection:</h3>
+    <p>${user.kycNotes}</p>
+    <p>Please address the issues and resubmit your KYC documents for another review.</p>
+    <p>If you have questions, please contact our support team.</p>
+    <p><strong>Homigo Team</strong></p>
+  `;
+  sendMail(user.email, 'KYC Verification Status - Resubmission Required', rejectionEmail);
+
   res.json({ message: 'KYC rejected', kycStatus: user.kycStatus });
 }));
 
